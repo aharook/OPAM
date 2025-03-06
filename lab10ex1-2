@@ -1,0 +1,97 @@
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+#include "Walnut/Application.h"
+#include "Walnut/EntryPoint.h"
+#include "Walnut/Image.h"
+#include "Walnut/UI/UI.h"
+
+
+class ExampleLayer : public Walnut::Layer
+{
+public:
+    ExampleLayer()
+        : xp(0.3), dots(5),  croc(0.8), m_ResultDisplayed_task1(false) {}
+
+    virtual void OnUIRender() override
+    {
+        ImGui::Begin("Task 1 Variant 5");
+        ImGui::InputDouble("Value for xp", &xp);
+        ImGui::InputDouble("Value for number of points", &dots);
+        ImGui::InputDouble("Value for step (croc)", &croc);
+
+        if (ImGui::Button("Calculate Task 1"))
+        {
+            computeValues();
+        }
+
+        if (m_ResultDisplayed_task1)
+        {
+            ImGui::Text("The results are:");
+            ImGui::Text("%-10s%-15s", "x", "y"); // Заголовки таблиці
+            for (const auto& [value_x, value_y] : results)
+            {
+                ImGui::Text("%-10.4f%-15.4f", value_x, value_y);
+            }
+        }
+
+        if (ImGui::Button("Clear Task 1"))
+        {
+            clear_task1();
+        }
+
+        ImGui::End();
+    }
+
+private:
+    double dots, xp, x, y, croc;
+    bool m_ResultDisplayed_task1;
+    std::vector<std::pair<double, double>> results; // Збереження результатів
+
+    void computeValues()
+    {
+        results.clear();
+        x = xp;
+        for (int i= 0; i < dots; i++)
+        {
+            y = (pow(cos(x), 3) * pow(x, 2)) / (1.5 * x + 2);
+            results.emplace_back(x, y);
+            
+            x = xp + i * croc ;
+        }
+        m_ResultDisplayed_task1 = true;
+    }
+
+    void clear_task1()
+    {
+        results.clear();
+        m_ResultDisplayed_task1 = false;
+    }
+};
+
+Walnut::Application* Walnut::CreateApplication(int argc, char** argv)
+{
+    Walnut::ApplicationSpecification spec;
+    spec.Name = "Lab10";
+    spec.CustomTitlebar = true;
+
+    Walnut::Application* app = new Walnut::Application(spec);
+    std::shared_ptr<ExampleLayer> exampleLayer = std::make_shared<ExampleLayer>();
+    app->PushLayer(exampleLayer);
+    app->SetMenubarCallback([app, exampleLayer]()
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("Exit"))
+                {
+                    app->Close();
+                }
+                ImGui::EndMenu();
+            }
+        });
+
+    return app;
+}
+
+
+
