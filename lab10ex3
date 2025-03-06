@@ -7,18 +7,26 @@
 class FactorialLayer : public Walnut::Layer
 {
 public:
-    FactorialLayer() : n(5), sum(0), resultDisplayed(false) {}
+    FactorialLayer() : n(0), sum(0), N(0), resultDisplayed(false) {}
 
     virtual void OnUIRender() override
     {
         ImGui::Begin("Factorial Calculation");
-        ImGui::InputInt("Enter n", &n);
-        
-        if (ImGui::Button("Calculate"))
+
+        // Додаємо текстове поле для вводу та забороняємо кнопки +/-
+        ImGui::InputInt("Enter a positive n", &n, 0, 0, ImGuiInputTextFlags_CharsDecimal);
+
+        // Перевірка на правильність значення
+        if (n <= 0)
+        {
+            ImGui::Text("Please enter a positive integer value for n.");
+        }
+
+        if (ImGui::Button("Calculate") && n > 0)
         {
             calculateFactorial();
         }
-        
+
         if (resultDisplayed)
         {
             ImGui::Text("Results:");
@@ -27,18 +35,19 @@ public:
                 ImGui::Text("%.6f", val);
             }
         }
-        
+
         if (ImGui::Button("Clear"))
         {
             clearResults();
         }
-        
+
         ImGui::End();
     }
 
 private:
     int n;
     double sum;
+    double N;
     bool resultDisplayed;
     std::vector<double> results;
 
@@ -46,15 +55,17 @@ private:
     {
         results.clear();
         sum = 0;
+        N = 0;
         double factorial = std::tgamma(n + 1);
-        
+
         for (int i = 0; i < n; i++)
         {
-            double N = (n + 1) / factorial;
+            N = (n + 1) / factorial;
             sum += N;
-            results.push_back(N);
+            N = sum;
         }
-        
+        results.push_back(N);
+
         resultDisplayed = true;
     }
 
@@ -74,18 +85,18 @@ Walnut::Application* Walnut::CreateApplication(int argc, char** argv)
     Walnut::Application* app = new Walnut::Application(spec);
     std::shared_ptr<FactorialLayer> factorialLayer = std::make_shared<FactorialLayer>();
     app->PushLayer(factorialLayer);
-    
+
     app->SetMenubarCallback([app]()
-    {
-        if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Exit"))
+            if (ImGui::BeginMenu("File"))
             {
-                app->Close();
+                if (ImGui::MenuItem("Exit"))
+                {
+                    app->Close();
+                }
+                ImGui::EndMenu();
             }
-            ImGui::EndMenu();
-        }
-    });
-    
+        });
+
     return app;
 }
