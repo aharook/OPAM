@@ -1,0 +1,91 @@
+#include <iostream>
+#include <cmath>
+#include "Walnut/Application.h"
+#include "Walnut/EntryPoint.h"
+#include "Walnut/UI/UI.h"
+
+class FactorialLayer : public Walnut::Layer
+{
+public:
+    FactorialLayer() : n(5), sum(0), resultDisplayed(false) {}
+
+    virtual void OnUIRender() override
+    {
+        ImGui::Begin("Factorial Calculation");
+        ImGui::InputInt("Enter n", &n);
+        
+        if (ImGui::Button("Calculate"))
+        {
+            calculateFactorial();
+        }
+        
+        if (resultDisplayed)
+        {
+            ImGui::Text("Results:");
+            for (double val : results)
+            {
+                ImGui::Text("%.6f", val);
+            }
+        }
+        
+        if (ImGui::Button("Clear"))
+        {
+            clearResults();
+        }
+        
+        ImGui::End();
+    }
+
+private:
+    int n;
+    double sum;
+    bool resultDisplayed;
+    std::vector<double> results;
+
+    void calculateFactorial()
+    {
+        results.clear();
+        sum = 0;
+        double factorial = std::tgamma(n + 1);
+        
+        for (int i = 0; i < n; i++)
+        {
+            double N = (n + 1) / factorial;
+            sum += N;
+            results.push_back(N);
+        }
+        
+        resultDisplayed = true;
+    }
+
+    void clearResults()
+    {
+        results.clear();
+        resultDisplayed = false;
+    }
+};
+
+Walnut::Application* Walnut::CreateApplication(int argc, char** argv)
+{
+    Walnut::ApplicationSpecification spec;
+    spec.Name = "FactorialApp";
+    spec.CustomTitlebar = true;
+
+    Walnut::Application* app = new Walnut::Application(spec);
+    std::shared_ptr<FactorialLayer> factorialLayer = std::make_shared<FactorialLayer>();
+    app->PushLayer(factorialLayer);
+    
+    app->SetMenubarCallback([app]()
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Exit"))
+            {
+                app->Close();
+            }
+            ImGui::EndMenu();
+        }
+    });
+    
+    return app;
+}
