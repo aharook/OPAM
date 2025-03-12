@@ -1,0 +1,46 @@
+#include <Walnut/Application.h>
+#include <Walnut/EntryPoint.h>
+#include <string>
+
+class MainLayer : public Walnut::Layer {
+public:
+    virtual void OnUIRender() override {
+        ImGui::Begin("Sentence Modifier");
+
+        
+        ImGui::InputText("Enter a sentence", m_inputBuffer, sizeof(m_inputBuffer));
+
+        
+        if (ImGui::Button("Process")) {
+            ProcessSentence(std::string(m_inputBuffer));
+        }
+
+        
+        ImGui::Text("Modified sentence: %s", m_modifiedSentence.c_str());
+
+        ImGui::End();
+    }
+
+    void ProcessSentence(const std::string& input) {
+        m_modifiedSentence.clear();
+        for (char c : input) {
+            m_modifiedSentence += c;
+            if (c == 'k' || c == 'K') {
+                m_modifiedSentence += c;
+            }
+        }
+    }
+
+private:
+    char m_inputBuffer[1024] = { 0 };
+    std::string m_modifiedSentence;
+};
+
+Walnut::Application* Walnut::CreateApplication(int argc, char** argv) {
+    Walnut::ApplicationSpecification spec;
+    spec.Name = "Sentence Modifier";
+
+    Walnut::Application* app = new Walnut::Application(spec);
+    app->PushLayer<MainLayer>();
+    return app;
+}
