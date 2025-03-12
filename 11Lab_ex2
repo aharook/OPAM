@@ -1,0 +1,81 @@
+#include <Walnut/Application.h>
+#include <Walnut/EntryPoint.h>
+#include <Walnut/UI/UI.h>
+
+#include <iostream>
+#include <string>
+
+class AverageStudentMoneyLayer : public Walnut::Layer
+{
+public:
+    virtual void OnUIRender() override
+    {
+        UI();
+    }
+
+    void UI()
+    {
+        ImGui::Begin("Average Student`s Money Calculator");
+
+        // Введення кількості студентів
+        ImGui::InputInt("Number of scholarship", &m_size);
+        if (ImGui::Button("Set Number of scholarship"))
+        {
+            if (m_size > 0)
+            {
+                m_currentIndex = 0;
+                m_totalMoney = 0;
+                m_average = 0.0f;
+                m_studentMoney = 0;
+                inputActive = true;
+            }
+        }
+
+        if (m_size > 0 && inputActive)
+        {
+            if (m_currentIndex < m_size)
+            {
+                ImGui::Text("Enter money for scholarship %d:", m_currentIndex + 1);
+                ImGui::InputInt("Money", &m_studentMoney);
+
+                if (ImGui::Button("Next scholarship"))
+                {
+                    if (m_studentMoney >= 0) 
+                    {
+                        m_totalMoney += m_studentMoney;
+                        m_currentIndex++;
+                        m_studentMoney = 0; 
+                    }
+                }
+            }
+            else
+            {
+                if (m_size > 0)
+                {
+                    m_average = static_cast<float>(m_totalMoney) / m_size;
+                }
+                ImGui::Text("Average scholarship Money: %.2f", m_average);
+            }
+        }
+
+        ImGui::End();
+    }
+
+private:
+    int m_size = 0;       
+    int m_currentIndex = 0;
+    int m_totalMoney = 0;  
+    int m_studentMoney = 0; 
+    float m_average = 0.0f; 
+    bool inputActive = false; 
+};
+
+Walnut::Application* Walnut::CreateApplication(int argc, char** argv)
+{
+    Walnut::ApplicationSpecification spec;
+    spec.Name = "Average scholarship Money Calculator";
+
+    Walnut::Application* app = new Walnut::Application(spec);
+    app->PushLayer<AverageStudentMoneyLayer>();
+    return app;
+}
